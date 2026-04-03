@@ -118,3 +118,12 @@ Releases are managed by release-please and follow Conventional Commits.
 |--------|---------|
 | `INFRACOST_API_KEY` | Infracost cost estimation on PRs |
 | `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Real plan/apply (add per environment) |
+
+
+## Related Templates
+
+| Language | Repository |
+|----------|------------|
+| Rust | [todie/template-rust](https://github.com/todie/template-rust) |
+| Python | [todie/template-python](https://github.com/todie/template-python) |
+| Node.js | [todie/template-node](https://github.com/todie/template-node) |

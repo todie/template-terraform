@@ -249,6 +249,20 @@ Add more `.rego` files to `policy/` — Conftest picks them up automatically.
 
 ---
 
+
+
+## Related Templates
+
+Looking for a different language? Check out the other todie templates:
+
+| Template | Stack |
+|----------|-------|
+| [template-rust](https://github.com/todie/template-rust) | Rust · clippy · cargo-deny · nextest |
+| [template-python](https://github.com/todie/template-python) | Python · uv · ruff · pyright · pytest |
+| [template-node](https://github.com/todie/template-node) | Node.js · TypeScript · Vitest · Biome |
+
+---
+
 ## License
 
 MIT © 2026 [todie.io](https://todie.io)
