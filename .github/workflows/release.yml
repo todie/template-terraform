@@ -1,0 +1,28 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    name: Release Please
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          release-type: terraform-module
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # After a release is created, tag the module version
+      - name: Tag release
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          echo "Released version: ${{ steps.release.outputs.tag_name }}"
