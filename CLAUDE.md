@@ -1,120 +1,66 @@
-# CLAUDE.md — template-terraform
+# CLAUDE.md — Terraform/IaC Project (from todie/template-terraform)
 
-This repository is a Terraform project template. Below is a map of the scaffolding and the commands you'll use most.
+## Template Family
+This project was scaffolded from [todie/template-terraform](https://github.com/todie/template-terraform).
+See also: [template-rust](https://github.com/todie/template-rust) | [template-python](https://github.com/todie/template-python) | [template-node](https://github.com/todie/template-node)
+
+## Initialize
+- `terraform init` — initialize providers and backend
+- `terraform init -upgrade` — upgrade provider versions
+
+## Plan & Apply
+- `terraform plan` — preview changes
+- `terraform plan -out=tfplan` — save plan to file
+- `terraform apply tfplan` — apply saved plan
+- `terraform apply -auto-approve` — apply without confirmation (CI only)
+
+## Validate & Lint
+- `terraform fmt -check` — check formatting
+- `terraform fmt` — auto-format
+- `terraform validate` — HCL syntax and provider schema validation
+- `tflint` — lint with provider-specific rulesets (see .tflint.hcl)
+- Pre-commit hooks: `pre-commit run --all-files`
+
+## Security Scanning
+- `checkov -d .` — CIS benchmarks and security scanning
+- `trivy config .` — lightweight security scanner
+- `conftest test .` — OPA policy checks (see policy/ directory)
+
+## Testing
+- `terraform test` — built-in test framework (*.tftest.hcl files in tests/)
+- `terratest` (Go) — integration testing against real infrastructure
+
+## Cost Estimation
+- `infracost breakdown --path .` — estimate costs
+- `infracost diff --path .` — cost diff for changes
 
 ## Structure
-
 ```
-.
-├── main.tf                     # Root provider + backend config
-├── variables.tf                # Root input variables
-├── outputs.tf                  # Root outputs
-├── versions.tf                 # Version pinning notes
-├── environments/
-│   ├── dev/main.tf             # Dev backend + root module call
-│   ├── staging/main.tf         # Staging backend + root module call
-│   └── prod/main.tf            # Prod backend + root module call
-├── modules/
-│   └── example/               # Example reusable module skeleton
-│       ├── main.tf
-│       ├── variables.tf
-│       └── outputs.tf
-├── policy/
-│   └── require_tags.rego      # OPA policy: all resources must have required tags
-├── tests/
-│   └── example.tftest.hcl     # Terraform native test file
-├── .tflint.hcl                # TFLint ruleset config (terraform + aws plugins)
-├── .pre-commit-config.yaml    # Pre-commit hooks (fmt, validate, tflint, checkov, trivy)
-├── .github/
-│   └── workflows/
-│       ├── ci.yml             # CI: fmt → validate → tflint → checkov → plan + infracost
-│       └── release.yml        # release-please automated versioning
-├── release-please-config.json
-└── .release-please-manifest.json
+environments/     # Per-environment configs (dev/staging/prod)
+modules/          # Reusable Terraform modules
+policy/           # OPA/Rego policies for conftest
+tests/            # terraform test files (*.tftest.hcl)
 ```
 
-## Common Commands
+## CI Pipeline
+CI runs on every PR: fmt → init → validate → tflint → checkov → plan.
+On merge to main: apply. PR comments show plan output.
 
-### Init & Plan
+## Release
+Uses release-please for automated semver via git tags. Write conventional commits:
+- `feat:` → minor bump, `fix:` → patch bump, `feat!:` → major bump
+- Terraform modules are versioned by git tags, not internal version files
 
-```bash
-# Initialise (root)
-terraform init
+## Commit Discipline
+- One logical change per commit
+- One commit stack per feature branch
+- File a PR for each feature branch
+- Never bundle unrelated changes
+- Never push directly to main
 
-# Plan (root — dev vars)
-terraform plan -var="project_name=my-project" -var="environment=dev"
-
-# Plan a specific environment
-cd environments/dev && terraform init && terraform plan
-```
-
-### Validate & Format
-
-```bash
-terraform validate
-terraform fmt -recursive
-```
-
-### Lint
-
-```bash
-# Install TFLint: https://github.com/terraform-linters/tflint
-tflint --init
-tflint --config=.tflint.hcl
-```
-
-### Security Scan
-
-```bash
-# Checkov
-pip install checkov
-checkov -d . --framework terraform
-
-# Trivy
-trivy config .
-```
-
-### OPA / Conftest Policy Check
-
-```bash
-# Generate a plan JSON first
-terraform plan -out=tfplan.binary
-terraform show -json tfplan.binary > tfplan.json
-
-# Run conftest
-conftest test tfplan.json --policy policy/
-```
-
-### Native Terraform Tests
-
-```bash
-terraform test
-```
-
-### Pre-commit
-
-```bash
-# Install pre-commit: https://pre-commit.com
-pre-commit install
-pre-commit run --all-files
-```
-
-## CI/CD
-
-CI runs on every push and PR:
-1. `terraform fmt -check` — formatting gate
-2. `terraform init && terraform validate` — structural correctness
-3. `tflint` — linting
-4. `checkov` + `trivy` — security scanning (SARIF uploaded to GitHub Security tab)
-5. `conftest` — OPA policy enforcement
-6. `terraform plan` — plan with placeholder credentials (no real AWS calls)
-7. Infracost — cost diff comment on PRs (requires `INFRACOST_API_KEY` secret)
-
-Releases are managed by release-please and follow Conventional Commits.
-
-## Secrets Required
-
-| Secret | Purpose |
-|--------|---------|
-| `INFRACOST_API_KEY` | Infracost cost estimation on PRs |
-| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Real plan/apply (add per environment) |
+## Architecture Notes
+- Remote state with locking (configure backend in environments/*/main.tf)
+- Workspaces for environment separation
+- OPA policies enforce organizational constraints (tags, naming, cost limits)
+- Atlantis recommended for PR-based plan/apply automation
+- Drift detection via scheduled terraform plan runs
