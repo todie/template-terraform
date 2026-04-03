@@ -1,0 +1,42 @@
+# Terraform state
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Terraform working directory
+.terraform/
+.terraform.lock.hcl
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Override files (local dev only, never commit)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform CLI config
+.terraformrc
+terraform.rc
+
+# tfvars with secrets — commit .tfvars.example, not the real thing
+*.tfvars
+!*.tfvars.example
+
+# Cost estimation
+infracost-breakdown.json
+.infracost/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Checkov / security scan output
+results.sarif
