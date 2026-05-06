@@ -22,6 +22,21 @@ Multi-environment layout · OPA policies · native tests · full CI/CD pipeline
 
 ---
 
+## todie Template Family
+
+This is the **Terraform/IaC** template. Part of the todie.io standardized project scaffolding.
+
+| Template | Language | Repo |
+|----------|----------|------|
+| template-rust | Rust | [todie/template-rust](https://github.com/todie/template-rust) |
+| template-python | Python 3.12+ | [todie/template-python](https://github.com/todie/template-python) |
+| template-node | TypeScript/Node | [todie/template-node](https://github.com/todie/template-node) |
+| **template-terraform** | Terraform/IaC | *you are here* |
+
+All templates follow the [todie.io SOP](https://github.com/todie) — consistent CI/CD, linting, security scanning, release automation, and commit discipline across every project.
+
+---
+
 ## Overview
 
 `template-terraform` is a GitHub template repository that gives you a complete, opinionated Terraform project skeleton in seconds. Clone it, rename a few variables, and ship.
