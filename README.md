@@ -105,6 +105,9 @@ terraform plan \
 ├── policy/
 │   └── require_tags.rego         ← OPA: all resources must have required tags
 │
+├── scripts/
+│   └── init.sh                   ← backend bootstrap (env-var configurable)
+
 ├── tests/
 │   ├── example.tftest.hcl        ← root module tests
 │   └── dns.tftest.hcl            ← DNS module tests
@@ -114,9 +117,10 @@ terraform plan \
 ├── .editorconfig                 ← editor formatting standards
 │
 └── .github/
-    └── workflows/
-        ├── ci.yml                ← CI pipeline
-        └── release.yml           ← release-please automation
+    ├── workflows/
+    │   ├── ci.yml                ← CI pipeline
+    │   └── release.yml           ← release-please automation
+    └── dependabot.yml            ← weekly provider + actions updates
 ```
 
 ---
@@ -126,13 +130,18 @@ terraform plan \
 ### Init & Plan
 
 ```bash
-# Root module
-terraform init
+# Root module (local state — for testing)
+terraform init -backend=false
+terraform plan -var="project_name=my-project" -var="environment=dev"
+
+# With remote S3 backend via bootstrap script
+TF_BACKEND_BUCKET=my-terraform-state ./scripts/init.sh
 terraform plan -var="project_name=my-project" -var="environment=dev"
 
 # Specific environment
 cd environments/dev
-terraform init
+TF_BACKEND_BUCKET=my-terraform-state TF_BACKEND_KEY=dev/terraform.tfstate \
+  ../../scripts/init.sh
 terraform plan
 ```
 

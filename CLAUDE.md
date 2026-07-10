@@ -25,15 +25,18 @@ This repository is a Terraform project template. Below is a map of the scaffoldi
 │       └── outputs.tf
 ├── policy/
 │   └── require_tags.rego      # OPA policy: all resources must have required tags
+├── scripts/
+│   └── init.sh                # Backend bootstrap (env-var configurable S3 backend)
 ├── tests/
 │   ├── example.tftest.hcl     # Root module tests
 │   └── dns.tftest.hcl         # DNS module tests (mocked cloudflare provider)
 ├── .tflint.hcl                # TFLint ruleset config (terraform + aws plugins)
 ├── .pre-commit-config.yaml    # Pre-commit hooks (fmt, validate, tflint, checkov, trivy)
 ├── .github/
-│   └── workflows/
-│       ├── ci.yml             # CI: fmt → validate → tflint → checkov → plan + infracost
-│       └── release.yml        # release-please automated versioning
+│   ├── workflows/
+│   │   ├── ci.yml             # CI: fmt → validate → tflint → checkov → plan + infracost
+│   │   └── release.yml        # release-please automated versioning
+│   └── dependabot.yml         # Weekly Terraform provider + GitHub Actions updates
 ├── release-please-config.json
 └── .release-please-manifest.json
 ```
@@ -43,14 +46,19 @@ This repository is a Terraform project template. Below is a map of the scaffoldi
 ### Init & Plan
 
 ```bash
-# Initialise (root)
-terraform init
+# Initialise (root, no backend — for local testing)
+terraform init -backend=false
+
+# Initialise with remote S3 backend via bootstrap script
+TF_BACKEND_BUCKET=my-terraform-state ./scripts/init.sh
 
 # Plan (root — dev vars)
 terraform plan -var="project_name=my-project" -var="environment=dev"
 
 # Plan a specific environment
-cd environments/dev && terraform init && terraform plan
+cd environments/dev && \
+  TF_BACKEND_BUCKET=my-terraform-state TF_BACKEND_KEY=dev/terraform.tfstate \
+    ../../scripts/init.sh && terraform plan
 ```
 
 ### Validate & Format
@@ -116,6 +124,7 @@ CI runs on every push and PR:
 7. Infracost — cost diff comment on PRs (requires `INFRACOST_API_KEY` secret)
 
 Releases are managed by release-please and follow Conventional Commits.
+
 
 ## Secrets Required
 
