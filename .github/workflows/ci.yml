@@ -115,6 +115,7 @@ jobs:
           # Use fake credentials for plan-only — no resources created
           AWS_ACCESS_KEY_ID: fake
           AWS_SECRET_ACCESS_KEY: fake
+          CLOUDFLARE_API_TOKEN: fake
 
       - name: Conftest Policy Check
         uses: instrumenta/conftest-action@master
@@ -148,6 +149,7 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
           AWS_ACCESS_KEY_ID: fake
           AWS_SECRET_ACCESS_KEY: fake
+          CLOUDFLARE_API_TOKEN: fake
 
   # ── Infracost ─────────────────────────────────────────────────────────────
   infracost:

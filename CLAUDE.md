@@ -15,14 +15,19 @@ This repository is a Terraform project template. Below is a map of the scaffoldi
 │   ├── staging/main.tf         # Staging backend + root module call
 │   └── prod/main.tf            # Prod backend + root module call
 ├── modules/
-│   └── example/               # Example reusable module skeleton
+│   ├── dns/                  # Cloudflare DNS records module (multi-zone)
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   └── example/               # Example reusable module skeleton (AWS SSM)
 │       ├── main.tf
 │       ├── variables.tf
 │       └── outputs.tf
 ├── policy/
 │   └── require_tags.rego      # OPA policy: all resources must have required tags
 ├── tests/
-│   └── example.tftest.hcl     # Terraform native test file
+│   ├── example.tftest.hcl     # Root module tests
+│   └── dns.tftest.hcl         # DNS module tests (mocked cloudflare provider)
 ├── .tflint.hcl                # TFLint ruleset config (terraform + aws plugins)
 ├── .pre-commit-config.yaml    # Pre-commit hooks (fmt, validate, tflint, checkov, trivy)
 ├── .github/
@@ -118,7 +123,7 @@ Releases are managed by release-please and follow Conventional Commits.
 |--------|---------|
 | `INFRACOST_API_KEY` | Infracost cost estimation on PRs |
 | `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Real plan/apply (add per environment) |
-
+| `CLOUDFLARE_API_TOKEN` | DNS record management (if using the `dns` module) |
 
 ## Related Templates
 

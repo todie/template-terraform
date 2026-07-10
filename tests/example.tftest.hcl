@@ -2,9 +2,10 @@
 # Run with: terraform test
 
 variables {
-  project_name = "test-project"
-  environment  = "dev"
-  aws_region   = "us-east-1"
+  project_name         = "test-project"
+  environment          = "dev"
+  aws_region           = "us-east-1"
+  cloudflare_api_token = "abcdefghijklmnopqrstuvwxyz0123456789-_AB"
 }
 
 # ── Plan-time checks ──────────────────────────────────────────────────────────
