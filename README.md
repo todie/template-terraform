@@ -45,7 +45,7 @@ All templates follow the [todie.io SOP](https://github.com/todie) — consistent
 
 | Layer | Tooling |
 |---|---|
-| Infrastructure | Terraform ≥ 1.6, AWS provider ~5.0 |
+| Infrastructure | Terraform ≥ 1.6, AWS provider ~5.0, Cloudflare provider ~5.0 |
 | Linting | TFLint + terraform ruleset + AWS ruleset |
 | Security | Checkov, Trivy, OPA/Conftest |
 | Testing | Terraform native tests (`terraform test`) |
@@ -93,7 +93,11 @@ terraform plan \
 │   └── prod/main.tf              ← prod backend + root module call
 │
 ├── modules/
-│   └── example/                  ← reusable module skeleton
+│   ├── dns/                     ← Cloudflare DNS records module (multi-zone)
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   └── example/                  ← reusable module skeleton (AWS SSM)
 │       ├── main.tf
 │       ├── variables.tf
 │       └── outputs.tf
@@ -101,17 +105,22 @@ terraform plan \
 ├── policy/
 │   └── require_tags.rego         ← OPA: all resources must have required tags
 │
+├── scripts/
+│   └── init.sh                   ← backend bootstrap (env-var configurable)
+
 ├── tests/
-│   └── example.tftest.hcl        ← Terraform native test file
+│   ├── example.tftest.hcl        ← root module tests
+│   └── dns.tftest.hcl            ← DNS module tests
 │
 ├── .tflint.hcl                   ← TFLint ruleset config
 ├── .pre-commit-config.yaml       ← pre-commit hook definitions
 ├── .editorconfig                 ← editor formatting standards
 │
 └── .github/
-    └── workflows/
-        ├── ci.yml                ← CI pipeline
-        └── release.yml           ← release-please automation
+    ├── workflows/
+    │   ├── ci.yml                ← CI pipeline
+    │   └── release.yml           ← release-please automation
+    └── dependabot.yml            ← weekly provider + actions updates
 ```
 
 ---
@@ -121,13 +130,18 @@ terraform plan \
 ### Init & Plan
 
 ```bash
-# Root module
-terraform init
+# Root module (local state — for testing)
+terraform init -backend=false
+terraform plan -var="project_name=my-project" -var="environment=dev"
+
+# With remote S3 backend via bootstrap script
+TF_BACKEND_BUCKET=my-terraform-state ./scripts/init.sh
 terraform plan -var="project_name=my-project" -var="environment=dev"
 
 # Specific environment
 cd environments/dev
-terraform init
+TF_BACKEND_BUCKET=my-terraform-state TF_BACKEND_KEY=dev/terraform.tfstate \
+  ../../scripts/init.sh
 terraform plan
 ```
 
@@ -219,6 +233,7 @@ Commits to `main` that follow [Conventional Commits](https://www.conventionalcom
 | `INFRACOST_API_KEY` | Cost estimation on PRs — [get one free](https://www.infracost.io/) |
 | `AWS_ACCESS_KEY_ID` | Real plan/apply (add per-environment) |
 | `AWS_SECRET_ACCESS_KEY` | Real plan/apply (add per-environment) |
+| `CLOUDFLARE_API_TOKEN` | DNS record management (if using the `dns` module) |
 
 ---
 
@@ -249,6 +264,35 @@ module "my_thing" {
   environment = var.environment
 }
 ```
+
+
+### Cloudflare DNS Module
+
+The `modules/dns` module manages Cloudflare DNS records across one or more zones. It's wired into the root module via the `cloudflare_dns_zones` variable — set it to `{}` (default) to skip.
+
+```hcl
+# In your root or environment main.tf — set the zones variable:
+module "cloudflare_dns" {
+  source = "./modules/dns"
+
+  cloudflare_api_token = var.cloudflare_api_token
+
+  zones = {
+    "example.com" = {
+      records = {
+        "www" = [
+          { name = "www.example.com", value = "192.0.2.1", type = "A", proxied = true }
+        ],
+        "mail" = [
+          { name = "example.com", value = "mail.example.com", type = "MX", proxied = false, priority = 10 }
+        ]
+      }
+    }
+  }
+}
+```
+
+Supports A, AAAA, CNAME, TXT, MX, and any other Cloudflare record type. Proxied records use Cloudflare's automatic TTL (1); unproxied records default to 300.
 
 ---
 

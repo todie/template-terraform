@@ -17,6 +17,12 @@ plugin "aws" {
   source  = "github.com/terraform-linters/tflint-ruleset-aws"
 }
 
+plugin "cloudflare" {
+  enabled = true
+  version = "0.7.0"
+  source  = "github.com/terraform-linters/tflint-ruleset-cloudflare"
+}
+
 rule "terraform_deprecated_interpolation" {
   enabled = true
 }
